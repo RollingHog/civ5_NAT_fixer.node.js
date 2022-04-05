@@ -1,0 +1,15 @@
+{
+  "name": "civ5_nat_fixer.node",
+  "version": "1.0.0",
+  "description": "fixes Civ5 and CivBE multiplayer \"turn doesn't end\" problem when one of players is behind the NAT",
+  "main": "civ5_NAT_fixer.node.js",
+  "dependencies": {
+    "traceroute": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}
