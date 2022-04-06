@@ -6,12 +6,12 @@ const http = require('http')
 //NPM PACKAGES
 
 //CONSTANTS
-const DEFAULT_ROUTER_IP = '192.168.1.1'
+const IP_DISCOVERY_SERVICE_ADDR = 'icanhazip.com'
 
 const HAMACHI_ADAPTER = 'Hamachi'
 const ETHERNET_ADAPTER = 'Ethernet'
 
-let HAMACHI_LOCATION = null
+let HAMACHI_EXEC_LOCATION = null
 
 const cache = {
   tracert: null,
@@ -31,19 +31,20 @@ function pause(prompt = 'Press any key...') {
 // MAIN THINGS
 
 function tracert(dest) {
-  log('doing tracert; this is long process')
+  log('doing traceroute; this is long process')
   // try {
   // } catch(e) {
   //   autoenc.detectEncoding(e.stderr).text
   // }
   const result = child_process.execSync('tracert ' + dest).toString()
+    .replace(/\r/g,'')
     .split('\n')
     .filter(e => e.match(/^( +\d+)/g))
-    .map(e => e.split(' ').slice(-2))
-    .map(e => ([e[0], e[1].replace(/[[\]]/g,'')]) )
+    .map(e => e.trim().split(' ').slice(-2))
+    .map(e => ({name: e[0], ip: e[1].replace(/[[\]]/g,'')}) )
 
   cache[tracert.name] = result
-  log('tracert done')
+  log('traceroute done')
   return result
 }
 
@@ -69,7 +70,7 @@ function ipconfig() {
 function getExternalIP() {
   // from https://github.com/sindresorhus/public-ip
   const options = {
-    host: 'icanhazip.com',
+    host: IP_DISCOVERY_SERVICE_ADDR,
     port: 80,
     path: '/'
   }
@@ -84,21 +85,26 @@ function getExternalIP() {
 
 async function getTargetConstants() {
   return {
-    TARGET_LAN_IP:  cache.ipconfig[ETHERNET_ADAPTER].address,
-    TARGET_MASK:    cache.ipconfig[ETHERNET_ADAPTER].netmask,
-    // https://www.npmjs.com/package/default-gateway
-    TARGET_ROUTER:  DEFAULT_ROUTER_IP,
+    TARGET_LAN_IP:  cache.ipconfig[ETHERNET_ADAPTER][0].address,
+    TARGET_MASK:    cache.ipconfig[ETHERNET_ADAPTER][0].netmask,
+    // ip of first hop in tracert
+    TARGET_ROUTER:  cache.tracert[0].ip,
     target_NAT_IP:  null,
     target_VPN_IP:  null,
   }
 }
 
 async function main() {
+  //ping (it does ICMP) to CALLER computer to check if redoing is nessesary
+  // https://stackoverflow.com/questions/4737130/how-to-ping-from-a-node-js-app
 
-  log(await getExternalIP())
+  // https://stackoverflow.com/questions/20185548/how-do-i-read-a-single-character-from-stdin-synchronously
+
+  await getExternalIP()
   const interfaces = ipconfig()
-  log(interfaces[HAMACHI_ADAPTER], interfaces[ETHERNET_ADAPTER])
-  // log(tracert('ya.ru'))
+  // log(interfaces[HAMACHI_ADAPTER], interfaces[ETHERNET_ADAPTER])
+  // at-home
+  log(tracert('at-home.ru'))
   log(await getTargetConstants())
   pause()
 }
