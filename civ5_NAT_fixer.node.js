@@ -31,6 +31,7 @@ function pause(prompt = 'Press any key...') {
 // MAIN THINGS
 
 function tracert(dest) {
+  // TODO save cache to file
   log('doing traceroute; this is long process')
   // try {
   // } catch(e) {
@@ -41,7 +42,7 @@ function tracert(dest) {
     .split('\n')
     .filter(e => e.match(/^( +\d+)/g))
     .map(e => e.trim().split(' ').slice(-2))
-    .map(e => ({name: e[0], ip: e[1].replace(/[[\]]/g,'')}) )
+    .map(e => ({name: e[0].toLowerCase(), ip: e[1].replace(/[[\]]/g,'')}) )
 
   cache[tracert.name] = result
   log('traceroute done')
@@ -67,8 +68,10 @@ function ipconfig() {
   return result
 }
 
-function getExternalIP() {
+function getPublicIP() {
   // from https://github.com/sindresorhus/public-ip
+
+  log('getting public IP...')
   const options = {
     host: IP_DISCOVERY_SERVICE_ADDR,
     port: 80,
@@ -79,8 +82,14 @@ function getExternalIP() {
     http.get(options, function(res) {
       if(res.statusCode != 200) reject({status: res.statusCode})
       res.on("data", chunk => resolve(chunk.toString()))
-    }).on('error', e => reject(e))
+    }).on('error', e => reject('cannot get public IP of current computer: ' + e))
   })
+}
+
+function findNAT(tracert_array) {
+  let result = tracert_array.filter( e => e.name.includes('nat'))
+  if(result.length == 0) result = null
+  return result
 }
 
 async function getTargetConstants() {
@@ -89,7 +98,7 @@ async function getTargetConstants() {
     TARGET_MASK:    cache.ipconfig[ETHERNET_ADAPTER][0].netmask,
     // ip of first hop in tracert
     TARGET_ROUTER:  cache.tracert[0].ip,
-    target_NAT_IP:  null,
+    target_NAT_IP:  findNAT(cache.tracert),
     target_VPN_IP:  null,
   }
 }
@@ -100,7 +109,7 @@ async function main() {
 
   // https://stackoverflow.com/questions/20185548/how-do-i-read-a-single-character-from-stdin-synchronously
 
-  await getExternalIP()
+  await getPublicIP()
   const interfaces = ipconfig()
   // log(interfaces[HAMACHI_ADAPTER], interfaces[ETHERNET_ADAPTER])
   // at-home
