@@ -71,7 +71,7 @@ function ipconfig() {
 function getPublicIP() {
   // from https://github.com/sindresorhus/public-ip
 
-  log('getting public IP...')
+  log('getting public IP')
   const options = {
     host: IP_DISCOVERY_SERVICE_ADDR,
     port: 80,
@@ -81,24 +81,30 @@ function getPublicIP() {
   return new Promise( (resolve, reject) => {
     http.get(options, function(res) {
       if(res.statusCode != 200) reject({status: res.statusCode})
-      res.on("data", chunk => resolve(chunk.toString()))
+      res.on("data", chunk => {
+        log('getting public IP done')
+        resolve(chunk.toString())
+      })
     }).on('error', e => reject('cannot get public IP of current computer: ' + e))
   })
 }
 
 function findNAT(tracert_array) {
-  let result = tracert_array.filter( e => e.name.includes('nat'))
+  let result = tracert_array.filter( e => e.name.includes('.nat'))
   if(result.length == 0) result = null
+  if(result.length == 1) result = result[0]
+  if(result.length > 1) throw new Error('more than one possible NAT detected')
   return result
 }
 
 async function getTargetConstants() {
+  // this set of parameters can be used at any number of CALLER computers once obtained
   return {
     TARGET_LAN_IP:  cache.ipconfig[ETHERNET_ADAPTER][0].address,
     TARGET_MASK:    cache.ipconfig[ETHERNET_ADAPTER][0].netmask,
     // ip of first hop in tracert
     TARGET_ROUTER:  cache.tracert[0].ip,
-    target_NAT_IP:  findNAT(cache.tracert),
+    target_NAT_IP:  findNAT(cache.tracert).ip,
     target_VPN_IP:  null,
   }
 }
@@ -113,8 +119,9 @@ async function main() {
   const interfaces = ipconfig()
   // log(interfaces[HAMACHI_ADAPTER], interfaces[ETHERNET_ADAPTER])
   // at-home
-  log(tracert('at-home.ru'))
+  tracert('at-home.ru')
   log(await getTargetConstants())
+  //form .bat files "set" and "clear" once parameters aquired
   pause()
 }
 
