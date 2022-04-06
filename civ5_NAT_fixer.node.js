@@ -109,5 +109,7 @@ async function main() {
   pause()
 }
 
-
 main()
+.catch( e => {
+  console.log('FATAL ERROR: ' + e.message)
+})
