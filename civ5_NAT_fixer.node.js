@@ -44,7 +44,13 @@ function ipconfig_() {
   return result
 }
 
-const interfaces = ipconfig_()
-log(interfaces['Hamachi'], interfaces['Ethernet'])
-log(tracert('ya.ru'))
-pause()
+async function main() {
+
+  const interfaces = ipconfig_()
+  log(interfaces['Hamachi'], interfaces['Ethernet'])
+  // log(tracert('ya.ru'))
+  pause()
+}
+
+
+main()
