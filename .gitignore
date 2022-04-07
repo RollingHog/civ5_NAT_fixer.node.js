@@ -1,4 +1,5 @@
 node_modules/**
 civ5_routes_add.bat
 dist/**
+!dist/create_release.bat
 out/**
