@@ -1,2 +1,4 @@
 node_modules/**
 civ5_routes_add.bat
+dist/**
+out/**

@@ -172,10 +172,25 @@ async function getTargetVars() {
   }
 }
 
+const OUT_DIR = 'out'
+async function createOutDir() {
+  funcStatus.doing(`creating "/${OUT_DIR}" directory`)
+  const exists = await fs.promises.access(OUT_DIR)
+    .then(_ => true)
+    .catch(_ => false)
+  if(!exists) await fs.promises.mkdir().catch(e => {
+    throw e
+  })
+  funcStatus.done()
+}
+
 async function createBatFilesFromTargetVars(vars) {
+
+  await createOutDir()
+
   funcStatus.doing('creating .bat files')
   //form .bat files "set" and "clear" once parameters aquired
-  const ROUTE_ADDER_FILENAME = 'civ5_routes_add.bat'
+  const ROUTE_ADDER_FILENAME = `${OUT_DIR}/civ5_routes_add.bat`
   const adderText = `@echo off
 rem set /p=Run on CALLER computer only. Enter to proceed.
 echo route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
