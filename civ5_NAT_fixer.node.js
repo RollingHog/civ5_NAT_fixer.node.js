@@ -134,6 +134,7 @@ const POSSIBLE_HAMACHI_LOCATIONS = [
 function getVPNData() {
   let res
   funcStatus.doing('getting VPN IP from Hamachi')
+  // FIXME this is NOT usual hamachi installation way!
   HAMACHI_EXEC_LOCATION = POSSIBLE_HAMACHI_LOCATIONS[1]
   try {
     res = child_process.execSync(`"${HAMACHI_EXEC_LOCATION}\\hamachi-2.exe" --cli`).toString()
