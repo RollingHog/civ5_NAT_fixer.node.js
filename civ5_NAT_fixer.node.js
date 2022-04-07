@@ -23,7 +23,7 @@ const cache = {
 // MISC
 const log = console.log
 
-function pause(prompt = 'Press any key...') {
+function pause(prompt = '\n\x1b[46mPress any key\x1b[0m') {
   log(prompt)
   process.stdin.setRawMode( true )
   process.stdin.resume()
@@ -37,11 +37,22 @@ function getChar() {
   return buffer.toString('utf8')
 }
 
+const funcStatus = {
+  str: null,
+  doing(str) {
+    this.str = str
+    process.stdout.write('\x1b[43mdoing\x1b[0m ' + str)
+  },
+  done() {
+    process.stdout.write(`\r\x1b[42mdone\x1b[0m ${this.str}\n`)
+  }
+}
+
 // MAIN THINGS
 
 function tracert(dest) {
   // TODO save cache to file
-  log('doing traceroute; this is long process')
+  funcStatus.doing('traceroute (this will take a while)')
 
   let result
   try {
@@ -57,12 +68,12 @@ function tracert(dest) {
     .map(e => ({name: e[0].toLowerCase(), ip: e[1].replace(/[[\]]/g,'')}) )
 
   cache[tracert.name] = result
-  log('traceroute done')
+  funcStatus.done()
   return result
 }
 
 function ipconfig() {
-  log('doing ipconfig')
+  funcStatus.doing('ipconfig')
   const nets = os.networkInterfaces()
   const result = {}
 
@@ -78,7 +89,7 @@ function ipconfig() {
   }
 
   cache[ipconfig.name] = result
-  log('ipconfig done')
+  funcStatus.done()
   return result
 }
 
@@ -104,10 +115,12 @@ function getPublicIP() {
 }
 
 function findNAT(tracert_array) {
+  funcStatus.doing('parcing tracert for NAT')
   let result = tracert_array.filter( e => e.name.includes('.nat'))
   if(result.length == 0) result = null
   if(result.length == 1) result = result[0]
   if(result.length > 1) throw new Error('more than one possible NAT detected')
+  funcStatus.done()
   return result
 }
 
@@ -120,7 +133,7 @@ const POSSIBLE_HAMACHI_LOCATIONS = [
 
 function getVPNData() {
   let res
-
+  funcStatus.doing('getting VPN IP from Hamachi')
   HAMACHI_EXEC_LOCATION = POSSIBLE_HAMACHI_LOCATIONS[1]
   try {
     res = child_process.execSync(`"${HAMACHI_EXEC_LOCATION}\\hamachi-2.exe" --cli`).toString()
@@ -141,6 +154,7 @@ function getVPNData() {
 
   const nickname = res.match('nickname *: *([^\n]+)')[1]
 
+  funcStatus.done()
   return { address, nickname }
 }
 
@@ -159,6 +173,7 @@ async function getTargetVars() {
 }
 
 async function createBatFilesFromTargetVars(vars) {
+  funcStatus.doing('creating .bat files')
   //form .bat files "set" and "clear" once parameters aquired
   const ROUTE_ADDER_FILENAME = 'civ5_routes_add.bat'
   const adderText = `@echo off
@@ -169,7 +184,7 @@ echo route add ${vars.TARGET_NAT_IP} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUT
 rem delete ${ROUTE_ADDER_FILENAME}
   `
   await fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' })
-  log(`writing ${ROUTE_ADDER_FILENAME} done`)
+  funcStatus.done()
 }
 
 async function main() {
@@ -184,6 +199,6 @@ async function main() {
 
 main()
 .catch( e => {
-  console.log('FATAL: ' + e.message)
+  console.log('\x1b[41mFATAL:\x1b[0m ' + e.message)
   pause()
 })
