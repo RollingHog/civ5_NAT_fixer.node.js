@@ -167,8 +167,8 @@ async function getTargetVars() {
     TARGET_MASK:    cache.ipconfig[ETHERNET_ADAPTER][0].netmask,
     // ip of first hop in tracert
     TARGET_ROUTER:  cache.tracert[0].ip,
-    target_NAT_IP:  findNAT(cache.tracert).ip,
-    target_VPN_IP:  getVPNData().nickname,
+    TARGET_NAT_IP:  findNAT(cache.tracert).ip,
+    TARGET_VPN_IP:  getVPNData().address,
   }
 }
 
@@ -178,8 +178,8 @@ async function createBatFilesFromTargetVars(vars) {
   const ROUTE_ADDER_FILENAME = 'civ5_routes_add.bat'
   const adderText = `@echo off
 rem set /p=Run on CALLER computer only. Enter to proceed.
-echo route add ${vars.TARGET_LAN_IP} mask 255.255.255.0       ${vars.TARGET_VPN_IP}
-echo route add ${vars.TARGET_ROUTER} mask 255.255.255.0       ${vars.TARGET_LAN_IP}
+echo route add ${vars.TARGET_LAN_IP} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
+echo route add ${vars.TARGET_ROUTER} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
 echo route add ${vars.TARGET_NAT_IP} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
 rem delete ${ROUTE_ADDER_FILENAME}
   `
