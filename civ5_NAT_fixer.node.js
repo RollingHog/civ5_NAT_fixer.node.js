@@ -44,7 +44,7 @@ const funcStatus = {
     process.stdout.write('\x1b[43mdoing\x1b[0m ' + str)
   },
   done() {
-    process.stdout.write(`\r\x1b[42mdone\x1b[0m ${this.str}\n`)
+    process.stdout.write(`\r\x1b[42mdone\x1b[0m  ${this.str}\n`)
   }
 }
 
