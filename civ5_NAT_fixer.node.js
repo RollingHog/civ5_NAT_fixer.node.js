@@ -42,12 +42,15 @@ function getChar() {
 function tracert(dest) {
   // TODO save cache to file
   log('doing traceroute; this is long process')
-  // try {
-  // } catch(e) {
-  //   autoenc.detectEncoding(e.stderr).text
-  // }
-  const result = child_process.execSync('tracert ' + dest).toString()
-    .replace(/\r/g,'')
+
+  let result
+  try {
+    result = child_process.execSync('tracert ' + dest).toString()
+  } catch(e) {
+    throw new Error('tracert failed\n'+JSON.stringify(e.stdout.toString()))
+  }
+
+  result = result.replace(/\r/g,'')
     .split('\n')
     .filter(e => e.match(/^( +\d+)/g))
     .map(e => e.trim().split(' ').slice(-2))
@@ -175,7 +178,7 @@ async function main() {
 
   // await getPublicIP()
   const vars = await getTargetVars()
-  createBatFilesFromTargetVars(vars)
+  await createBatFilesFromTargetVars(vars)
   pause()
 }
 
