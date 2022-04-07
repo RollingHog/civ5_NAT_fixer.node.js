@@ -178,9 +178,9 @@ async function createBatFilesFromTargetVars(vars) {
   const ROUTE_ADDER_FILENAME = 'civ5_routes_add.bat'
   const adderText = `@echo off
 rem set /p=Run on CALLER computer only. Enter to proceed.
-echo route add ${vars.TARGET_LAN_IP} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
-echo route add ${vars.TARGET_ROUTER} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
-echo route add ${vars.TARGET_NAT_IP} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
+echo route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
+echo route add ${vars.TARGET_ROUTER.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
+echo route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
 rem delete ${ROUTE_ADDER_FILENAME}
   `
   await fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' })
