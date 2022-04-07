@@ -4,9 +4,7 @@
   "description": "fixes Civ5 and CivBE multiplayer \"turn doesn't end\" problem when one of players is behind the NAT",
   "main": "civ5_NAT_fixer.node.js",
   "dependencies": {},
-  "devDependencies": {
-    "nexe": "^4.0.0-beta.19"
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
