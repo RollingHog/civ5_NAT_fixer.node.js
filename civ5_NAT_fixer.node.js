@@ -169,7 +169,7 @@ async function getTargetVars() {
     // ip of first hop in tracert
     TARGET_ROUTER:  cache.tracert[0].ip,
     TARGET_NAT_IP:  findNAT(cache.tracert).ip,
-    TARGET_VPN_IP:  getVPNData().address,
+    CALLER_VPN_IP:  getVPNData().address,
   }
 }
 
@@ -190,22 +190,24 @@ async function createBatFilesFromTargetVars(vars) {
   await createOutDir()
 
   funcStatus.doing('creating .bat files')
+  // FIXME tracert for TARGET_NAT_IP should be ran on CALLER computer!
+
   //form .bat files "set" and "clear" once parameters aquired
   //it works without PC reset
   const ROUTE_ADDER_FILENAME = `${OUT_DIR}/civ5_routes_add.bat`
   const adderText = `@echo off
 rem set /p=Run on CALLER computer only. Enter to proceed.
-route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
+route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.CALLER_VPN_IP}
 route add ${vars.TARGET_ROUTER.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
 route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
-rem netsh winsock reset
+pause
 rem delete ${ROUTE_ADDER_FILENAME}
 `
   await fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' })
   funcStatus.done()
 }
 
-async function main() {
+async function main() {  
   //ping (it does ICMP) to CALLER computer to check if redoing is nessesary
   // https://stackoverflow.com/questions/4737130/how-to-ping-from-a-node-js-app
 
