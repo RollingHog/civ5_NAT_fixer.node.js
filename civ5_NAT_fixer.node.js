@@ -191,14 +191,16 @@ async function createBatFilesFromTargetVars(vars) {
 
   funcStatus.doing('creating .bat files')
   //form .bat files "set" and "clear" once parameters aquired
+  //it works without PC reset
   const ROUTE_ADDER_FILENAME = `${OUT_DIR}/civ5_routes_add.bat`
   const adderText = `@echo off
 rem set /p=Run on CALLER computer only. Enter to proceed.
-echo route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
-echo route add ${vars.TARGET_ROUTER.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
-echo route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
+route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_VPN_IP}
+route add ${vars.TARGET_ROUTER.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
+route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
+rem netsh winsock reset
 rem delete ${ROUTE_ADDER_FILENAME}
-  `
+`
   await fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' })
   funcStatus.done()
 }
