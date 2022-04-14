@@ -7,6 +7,8 @@ const http = require('http')
 //NPM PACKAGES
 
 //CONSTANTS
+const TEST_MOCK = false
+
 const IP_DISCOVERY_SERVICE_ADDR = 'icanhazip.com'
 let   TRACERT_PROBE_ADDR = 'ya.ru'
 
@@ -55,10 +57,24 @@ function tracert(dest) {
   funcStatus.doing('traceroute (this will take a while)')
 
   let result
-  try {
-    result = child_process.execSync('tracert ' + dest).toString()
-  } catch(e) {
-    throw new Error('tracert failed\n'+JSON.stringify(e.stdout.toString()))
+  
+  if(!TEST_MOCK) {
+    try {
+      result = child_process.execSync('tracert ' + dest).toString()
+    } catch(e) {
+      throw new Error('tracert failed\n'+JSON.stringify(e.stdout.toString()))
+    }
+  } else {
+    result = `  1    <1 мс    <1 мс    <1 мс  192.168.1.1
+    2     1 ms    <1 мс     1 ms  10.82.96.5
+    3     2 ms     2 ms     1 ms  v235.3550.gra128-2.at-home.ru [212.232.64.22]
+    4     1 ms     1 ms     1 ms  v230.460.kir2.at-home.ru [212.232.64.17]
+    5     1 ms    16 ms    22 ms  v257.670.pis25.at-home.ru [212.232.66.65]
+    6     1 ms     1 ms     1 ms  v1783.7280-2.bm18.at-home.ru [212.232.64.10]
+    7     1 ms     1 ms     1 ms  v416.7150-1.cv19.at-home.ru [212.232.64.162]
+    8     1 ms     1 ms     1 ms  v304.670.cv19.at-home.ru [212.232.64.85]
+    9     1 ms     1 ms     1 ms  v382.670-2.cv19.at-home.ru [212.232.66.214]
+   10     1 ms     1 ms     1 ms  v181.nat7.cv19.at-home.ru [188.65.69.72]`
   }
 
   result = result.replace(/\r/g,'')
@@ -194,16 +210,28 @@ async function createBatFilesFromTargetVars(vars) {
 
   //form .bat files "set" and "clear" once parameters aquired
   //it works without PC reset
-  const ROUTE_ADDER_FILENAME = `${OUT_DIR}/civ5_routes_add.bat`
+  const BAT_MAIN_FILENAME = e => `${OUT_DIR}/civ5_routes_${e}.bat`
+  
+  const ROUTE_ADDER_FILENAME = BAT_MAIN_FILENAME('add')
   const adderText = `@echo off
-rem set /p=Run on CALLER computer only. Enter to proceed.
 route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.CALLER_VPN_IP}
 route add ${vars.TARGET_ROUTER.padEnd(14, ' ')} mask 255.255.255.0 ${vars.TARGET_LAN_IP}
 route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')} mask ${vars.TARGET_MASK} ${vars.TARGET_ROUTER}
 pause
-rem delete ${ROUTE_ADDER_FILENAME}
 `
-  await fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' })
+
+  const ROUTE_DELETER_FILENAME = BAT_MAIN_FILENAME('delete')
+  const deleterText = `@echo off
+route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')}
+route add ${vars.TARGET_ROUTER.padEnd(14, ' ')}
+route add ${vars.TARGET_NAT_IP.padEnd(14, ' ')}
+pause
+`
+
+  Promise.all([
+    fs.promises.writeFile(ROUTE_ADDER_FILENAME, adderText, { encoding:'ascii' }),
+    fs.promises.writeFile(ROUTE_DELETER_FILENAME, deleterText, { encoding:'ascii' }),
+  ])
   funcStatus.done()
 }
 
