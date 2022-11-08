@@ -1,4 +1,4 @@
-# NAT fixer for Sid Meier’s Civilization V 
+# NAT fixer for "Sid Meier’s Civilization V"
 Fixes **Sid Meier’s Civilization V** (Civ5) and **Civilization: Beyond Earth** multiplayer "turn doesn't end" problem (when playing on LAN?) and one of players is behind the NAT
 
 Here 
