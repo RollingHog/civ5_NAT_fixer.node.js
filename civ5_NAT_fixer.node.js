@@ -247,6 +247,7 @@ async function main() {
 
 main()
 .catch( e => {
+  log(e.stack)
   console.log('\x1b[41mFATAL:\x1b[0m ' + e.message)
   pause()
 })
