@@ -47,6 +47,7 @@ const funcStatus = {
   },
   done() {
     process.stdout.write(`\r\x1b[42mdone\x1b[0m  ${this.str}\n`)
+    this.str = null
   }
 }
 
