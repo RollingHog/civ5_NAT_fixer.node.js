@@ -57,7 +57,7 @@ function tracert(dest) {
   funcStatus.doing('traceroute (this will take a while)')
 
   let result
-  
+
   if(!TEST_MOCK) {
     try {
       result = child_process.execSync('tracert ' + dest).toString()
@@ -211,7 +211,7 @@ async function createBatFilesFromTargetVars(vars) {
   //form .bat files "set" and "clear" once parameters aquired
   //it works without PC reset
   const BAT_MAIN_FILENAME = e => `${OUT_DIR}/civ5_routes_${e}.bat`
-  
+
   const ROUTE_ADDER_FILENAME = BAT_MAIN_FILENAME('add')
   const adderText = `@echo off
 route add ${vars.TARGET_LAN_IP.padEnd(14, ' ')} mask 255.255.255.0 ${vars.CALLER_VPN_IP}
@@ -235,7 +235,7 @@ pause
   funcStatus.done()
 }
 
-async function main() {  
+async function main() {
   //ping (it does ICMP) to CALLER computer to check if redoing is nessesary
   // https://stackoverflow.com/questions/4737130/how-to-ping-from-a-node-js-app
 
